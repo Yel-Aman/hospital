@@ -47,6 +47,11 @@ class Service(models.Model):
     def __str__(self):
         return self.name
 
+# New model from lesson 13
+class Schedule(models.Model):
+    timestamp_start = models.DateTimeField()
+    timestamp_end = models.DateTimeField()
+    doctor = models.ForeignKey(Doctor, null=True, on_delete=models.SET_NULL, related_name="schedules")
 
 class Visit(models.Model):
     PLANNED = 'PLANNED'
@@ -61,9 +66,12 @@ class Visit(models.Model):
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name='visits')
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='visits')
     service = models.ForeignKey(Service, on_delete=models.CASCADE, null=True, blank=True)
-    visit_date_time = models.DateTimeField()
     status = models.CharField(max_length=100, choices=STATUSES_CHOICES)
-    description = models.TextField(null=True, blank=True)
-
+    notes = models.TextField(null=True, blank=True)
+    schedule = models.ForeignKey(Schedule, null=True, on_delete=models.SET_NULL, related_name="visits")
+    # schedule = models.OneToOneField(Schedule, null=True, on_delete=models.SET_NULL, related_name="visits")
     def __str__(self):
         return f'{self.doctor.full_name} - {self.patient.full_name} - {self.visit_date_time}'
+
+# HERE STARTS LESSON 13
+

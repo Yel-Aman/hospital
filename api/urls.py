@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path
-from .views import DoctorView, PatientView
+from .views import DoctorView, PatientView, VisitView
 from rest_framework.authtoken import views
 # from .views import ItemListCreateView
 from rest_framework_simplejwt.views import (
@@ -31,7 +31,8 @@ urlpatterns = [
          'post': 'update',
          'delete': 'destroy'})),
 
-
+    path('visit/', VisitView.as_view(
+        {'get': 'create'})),
 
     # path('token/', views.obtain_auth_token)
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),

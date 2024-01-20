@@ -2,9 +2,9 @@ from rest_framework import generics, viewsets, mixins
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from .models import Doctor, Patient
+from .models import Doctor, Patient, Visit
 from .serializers import DoctorListSerializer, DoctorRetrieveSerializer, DoctorCreateSerializer, DoctorUpdateSerializer, \
-    PatientListSerializer, PatientDetailedSerializer, PatientCreateOrUpdateSerializer
+    PatientListSerializer, PatientDetailedSerializer, PatientCreateOrUpdateSerializer, VisitCreateSerializer
 from .permissions import DoctorAccessPermission, RoleBasedPermissionsMixin, HasPermissionByAuthenticatedUserRole
 from django_filters.rest_framework import DjangoFilterBackend
 from .filter import DoctorFilterSet
@@ -106,6 +106,50 @@ class PatientView(viewsets.GenericViewSet,
 
     def get_queryset(self):
         return Patient.objects.all()
+
+    def list_patient(self,request,id):
+        queryset = self.get_queryset().filter(visits__doctor_id=id)
+
+        serializer = self.get_serializer(queryset, many =True)
+
+        return Response(data=serializer.data)
+
+# HERE START Lesson 13
+
+class VisitView(viewsets.GenericViewSet,
+                 RoleBasedPermissionsMixin,
+                 mixins.ListModelMixin,
+                 mixins.UpdateModelMixin,
+                 mixins.RetrieveModelMixin,
+                 mixins.CreateModelMixin,
+                 mixins.DestroyModelMixin):
+    lookup_field = 'id'
+
+    def get_action_permission(self):
+        if self.action in ('list','retrieve'):
+            self.action_permission = ['view_visit', ]
+        elif self.action == 'create':
+            self.action_permission = ['add_visit']
+        # elif self.action == 'update':
+        #     self.action_permission = ['change_visit']
+        # elif self.action == 'destroy':
+        #     self.action_permission = ['delete_visit']
+        else:
+            self.action_permissions = []
+
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return PatientListSerializer
+        if self.action == 'retrieve':
+            return PatientDetailedSerializer
+        if self.action == 'create':
+            return VisitCreateSerializer
+        if self.action == 'update':
+            return PatientCreateOrUpdateSerializer
+
+    def get_queryset(self):
+        return Visit.objects.all()
 
     def list_patient(self,request,id):
         queryset = self.get_queryset().filter(visits__doctor_id=id)

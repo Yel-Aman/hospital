@@ -1,7 +1,8 @@
+from jsonschema.exceptions import ValidationError
 from rest_framework import serializers
 
 # from .models import Item
-from .models import Doctor, Patient
+from .models import Doctor, Patient, Visit, Schedule
 
 
 # class ItemSerializer(serializers.ModelSerializer):
@@ -50,3 +51,33 @@ class PatientCreateOrUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Patient
         fields = '__all__'
+
+# HERE STARTS LESSON 13
+
+class VisitCreateSerializer(serializers.ModelSerializer):
+    # schedule_id = serializers.PrimaryKeyRelatedField(
+    #     queryset=Schedule.objects.all(),
+    #     read_only=True
+    # )
+    def validate_schedule(self, value):
+        visit_count = value.visit.count()
+        if 3 <= value.visits.count():
+            raise ValidationError ("too many reserves on that time")
+        return value
+    class Meta:
+        model = Visit
+        fields = ['patient','doctor','service', 'schedule_id']
+
+class ScheduleSerializer(serializers.ModelSerializer):
+    def validate(self,attrs):
+        attrs = super().validate(attrs)
+
+        timestamp_start, timestamp_end = attrs['timestamp_start'], attrs['timestamp_end']
+
+        exists = Schedule.objects.filter(
+            timestamp_start__lte = timestamp_start,
+            timestamp_end__gde = timestamp_start
+        ).exists()
+
+        if exists:
+            raise ValidationError('something wrong Yela')
