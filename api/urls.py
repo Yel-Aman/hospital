@@ -20,7 +20,8 @@ urlpatterns = [
                             'post': 'update',
                             'delete':'destroy'})),
     path('doctor/<int:id>/patient', DoctorView.as_view(
-                            {'get': 'list_patient'})),
+                            {'get': 'list_patient'}) ),
+
 
     path('patient/', PatientView.as_view(
         {'get': 'list',
