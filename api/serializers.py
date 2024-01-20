@@ -81,3 +81,10 @@ class ScheduleSerializer(serializers.ModelSerializer):
 
         if exists:
             raise ValidationError('something wrong Yela')
+
+
+class VisitRatingSerializer(serializers.ModelSerializer):
+    rating = serializers.IntegerField(min_value=0, max_value=10)
+    class Meta:
+        model = Visit
+        fields = ['rating']

@@ -70,6 +70,7 @@ class Visit(models.Model):
     notes = models.TextField(null=True, blank=True)
     schedule = models.ForeignKey(Schedule, null=True, on_delete=models.SET_NULL, related_name="visits")
     # schedule = models.OneToOneField(Schedule, null=True, on_delete=models.SET_NULL, related_name="visits")
+    rating = models.PositiveIntegerField(default=0)
     def __str__(self):
         return f'{self.doctor.full_name} - {self.patient.full_name} - {self.visit_date_time}'
 

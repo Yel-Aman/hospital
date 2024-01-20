@@ -1,14 +1,21 @@
-from rest_framework import generics, viewsets, mixins
+from django.http import JsonResponse
+from rest_framework import generics, viewsets, mixins, status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
+
 from .models import Doctor, Patient, Visit
 from .serializers import DoctorListSerializer, DoctorRetrieveSerializer, DoctorCreateSerializer, DoctorUpdateSerializer, \
-    PatientListSerializer, PatientDetailedSerializer, PatientCreateOrUpdateSerializer, VisitCreateSerializer
+    PatientListSerializer, PatientDetailedSerializer, PatientCreateOrUpdateSerializer, VisitCreateSerializer, \
+    VisitRatingSerializer
 from .permissions import DoctorAccessPermission, RoleBasedPermissionsMixin, HasPermissionByAuthenticatedUserRole
 from django_filters.rest_framework import DjangoFilterBackend
 from .filter import DoctorFilterSet
 from rest_framework import filters
+
+from .service import get_upcoming_visit_count
+
 
 # from .models import Item
 # from .serializers import ItemSerializer
@@ -147,9 +154,19 @@ class VisitView(viewsets.GenericViewSet,
             return VisitCreateSerializer
         if self.action == 'update':
             return PatientCreateOrUpdateSerializer
+        if self.action == 'set_rating':
+            return VisitRatingSerializer
 
     def get_queryset(self):
         return Visit.objects.all()
+
+    def set_rating(self,request,id):
+        instance = self.get_serializer()
+        serializer = self.get_serializer(instance,data=request.data)
+        serializer.is_valid(raise_exception = True)
+        serializer.save()
+
+        return Response(status=status.HTTP_200_OK)
 
     def list_patient(self,request,id):
         queryset = self.get_queryset().filter(visits__doctor_id=id)
@@ -157,3 +174,21 @@ class VisitView(viewsets.GenericViewSet,
         serializer = self.get_serializer(queryset, many =True)
 
         return Response(data=serializer.data)
+
+
+# Here is homework 13
+
+class AnalyticsView(viewsets.GenericViewSet):
+
+    def get_action_permissions(self):
+        if self.action == 'get_analytisc':
+            self.action_permissions = []
+    def get_analytics(self,request):
+        response = {
+            "patient_count": Patient.objects.all().count(),
+            "doctor_count":Doctor.objects.all().count(),
+            "visit_count":get_upcoming_visit_count(),
+        }
+        return Response(status=status.HTTP_200_OK,data=response)
+
+

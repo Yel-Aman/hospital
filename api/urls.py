@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path
-from .views import DoctorView, PatientView, VisitView
+from .views import DoctorView, PatientView, VisitView, AnalyticsView
 from rest_framework.authtoken import views
 # from .views import ItemListCreateView
 from rest_framework_simplejwt.views import (
@@ -33,6 +33,13 @@ urlpatterns = [
 
     path('visit/', VisitView.as_view(
         {'get': 'create'})),
+
+    path('visit/<int:id>/rating', VisitView.as_view(
+        {'put': 'set_rating'})),
+
+    path('analytics/', AnalyticsView.as_view({
+        'get':'get_analytics'
+    })),
 
     # path('token/', views.obtain_auth_token)
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
