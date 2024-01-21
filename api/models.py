@@ -1,4 +1,6 @@
 from django.db import models
+from rest_framework.authtoken.admin import User
+
 
 # class Item(models.Model):
 #     name = models.CharField(max_length=256)
@@ -75,4 +77,40 @@ class Visit(models.Model):
         return f'{self.doctor.full_name} - {self.patient.full_name} - {self.visit_date_time}'
 
 # HERE STARTS LESSON 13
+#class schedule moved before Visit class
 
+# HERE STARTS LESSON 14
+
+class Notification(models.Model):
+    NEW = 'NEW'
+    READ = 'READ'
+    ARCHIVED = 'ARCHIVED'
+
+    STATUS_CHOICES = [
+        (NEW, 'NEW'),
+        (READ, 'READ'),
+        (ARCHIVED, 'ARCHIVED'),
+    ]
+    VISIT_CREATED = "VISIT_CREATED"
+    VISIT_CANCELED = "VISIT_CANCELED"
+    OTHER = 'OTHER'
+
+    TYPE_CHOICES = [
+        (VISIT_CREATED, "VISIT_CREATED"),
+        (VISIT_CANCELED, "VISIT_CANCELED"),
+        (OTHER, 'OTHER'),
+    ]
+
+    sender = models.ForeignKey(User,related_name='sent_notifications', on_delete=models.CASCADE)
+    recipient = models.ForeignKey(User, related_name='received_notifications', on_delete=models.CASCADE)
+    message = models.TextField()
+    status = models.CharField(max_length=14,choices=STATUS_CHOICES,default=NEW)
+    notification_type = models.CharField(max_length=14, choices=TYPE_CHOICES, default=OTHER)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.sender} -> {self.recipient} : {self.message[:20]}'
+
+    class Meta:
+        ordering = ['-created_at']
